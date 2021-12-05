@@ -83,7 +83,8 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
-
+      - notify_slack_error
+      - notify_slack_pass
   build-backend:
     docker:
       - image: circleci/node:13.8.0
@@ -175,9 +176,3 @@ workflows:
   default:
     jobs:
       - build-frontend
-      - notify_slack_error:
-          requires:
-            - build-frontend
-      - notify_slack_pass:
-          requires:
-            - build-frontend
