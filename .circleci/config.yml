@@ -34,6 +34,10 @@ commands:
               exit 1
             fi
 
+  slacknotificaion:
+    steps:
+      - slack-orb/status:
+          fail_only: "true"
 jobs:
   build-frontend:
     docker:
@@ -67,6 +71,7 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
+      - slacknotificaion
 
   test-frontend:
     docker:
@@ -126,14 +131,7 @@ jobs:
             npm audit fix --audit-level=critical --force
             npm audit --audit-level=critical
 
-  SlackNotificationJob:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - run: echo "Sending slack notification"
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
+
 workflows:
   default:
     jobs:
