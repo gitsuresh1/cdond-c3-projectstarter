@@ -34,7 +34,7 @@ commands:
               exit 1
             fi
 
-  slacknotificaion:
+  slacknotification:
     steps:
       - slack-orb/status:
           fail_only: "true"
@@ -71,7 +71,7 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
-      - slacknotificaion
+      - slacknotification
 
   test-frontend:
     docker:
@@ -138,7 +138,3 @@ workflows:
       - build-frontend
       - build-backend:
           requires: [ build-frontend ]
-      - SlackNotificationJob:
-          requires:
-            - build-frontend
-            - build-backend
