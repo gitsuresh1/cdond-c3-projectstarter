@@ -34,11 +34,43 @@ commands:
               exit 1
             fi
 
+  notify_slack_error:
+    steps:
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+
+  notify_slack_pass:
+    steps:
+      - slack/notify:
+          event: pass
+          template: basic_success_1
+
+  trigger_slack_notification:
+    steps:
+      - slack/notify:
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "plain_text",
+                      "text": "*This is a text notification*",
+                      "emoji": true
+                    }
+                  ]
+                }
+              ]
+            }
+          event: always
 jobs:
   build-frontend:
     docker:
       - image: circleci/node:13.8.0
     steps:
+      - trigger_slack_notification
       - checkout
       - restore_cache:
           keys: [frontend-build]
@@ -143,6 +175,9 @@ workflows:
   default:
     jobs:
       - build-frontend
-      - SlackNotificationJob:
+      - notify_slack_error:
+          requires:
+            - build-frontend
+      - notify_slack_pass:
           requires:
             - build-frontend
