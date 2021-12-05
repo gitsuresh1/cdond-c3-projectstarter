@@ -34,10 +34,7 @@ commands:
               exit 1
             fi
 
-  slacknotification:
-    steps:
-      - slack-orb/status:
-          fail_only: "true"
+
 jobs:
   build-frontend:
     docker:
@@ -71,7 +68,9 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
-      - slacknotification
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
 
   test-frontend:
     docker:
