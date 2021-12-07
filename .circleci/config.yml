@@ -153,26 +153,22 @@ jobs:
               --tags project=udapeople \
               --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} \
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID}
-      - run:
-          name: Ensure front-end infrastructure exist
-          command: |
-            aws cloudformation deploy \
-              --region us-east-1 \
-              --template-file .circleci/files/frontend.yml \
-              --tags project=udapeople1 \
-              --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7} \
-              --parameter-overrides ID=${CIRCLE_WORKFLOW_ID}
+      - run: echo "Before inventory file contents" # run the `echo` command        -
+      - run: cat .circleci/ansible/inventory.txt # run the `echo` command        -
       - run:
           name: Add back-end ip to ansible inventory
           command: |
             aws ec2 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text \
-              --region us-east-1 >> inventory
+              --region us-east-1 >> .circleci/ansible/inventory.txt
+            cat .circleci/ansible/inventory.txt
+      - run: echo "after inventory file contents" # run the `echo` command        -
+      - run: cat .circleci/ansible/inventory.txt # run the `echo` command        -
       - persist_to_workspace:
           root: ~/
           paths:
-            - project/.circleci/ansible/inventory.txt
+            - inventory.txt
       - destroy-environment
 
   configure-infrastructure:
@@ -186,12 +182,16 @@ jobs:
           name: Install Ansible
           command: |
             apk add --update ansible
+      - attach_workspace:
+          at: ~/
       - run: yum install -y tar gzip
       - run:
           name: Configure server
           command: |
-            # Your code here
-            exit 1
+            cat ~/inventory.txt
+            cd .circleci/ansible
+            cat ~/inventory.txt
+            #ansible-playbook -i inventory configure-server.yml    
 
 workflows:
   default:
@@ -209,3 +209,5 @@ workflows:
        #   requires: [build-frontend]
       - deploy-infrastructure
        #   requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]
