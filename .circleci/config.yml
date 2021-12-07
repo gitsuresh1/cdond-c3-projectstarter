@@ -152,11 +152,11 @@ jobs:
             aws ec2 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text \
-              --region us-east-1 >> .circleci/ansible/inventory.txt
+              --region us-east-1 >> iplist.txt
       - persist_to_workspace:
-          root: .
+          root: ~/
           paths:
-            - .circleci/ansible/inventory.txt
+            - iplist.txt
       #- destroy-environment
 
   configure-infrastructure:
@@ -175,13 +175,9 @@ jobs:
       - run:
           name: Configure server
           command: |
-            cat ~/.circleci/ansible/inventory.txt
-            cat .circleci/ansible/inventory.txt
-            export inventoryFile=$(cat ~/.circleci/ansible/inventory.txt)
-            export inventoryFile1=$(cat .circleci/ansible/inventory.txt)
-            cat ${inventoryFile}
-            cat ${inventoryFile1}
-            cd .circleci/ansible
+            cat ~/iplist.txt
+            cd .circleci/ansible/
+            cp ~/iplist.txt .
             #ansible-playbook -i inventory.txt configure-server.yml    
 
 workflows:
