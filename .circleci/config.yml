@@ -144,7 +144,7 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
-      - run: yum install -y tar gzip
+      #- run: yum install -y tar gzip
 
       - run:
           name: Add back-end ip to ansible inventory
@@ -156,9 +156,9 @@ jobs:
               --region us-east-1 >> .circleci/ansible/inventory.txt
             cat .circleci/ansible/inventory.txt
       - persist_to_workspace:
-          root: ~/
+          root: .
           paths:
-            - .circleci/ansible/inventory.txt
+            - .
       #- destroy-environment
 
   configure-infrastructure:
