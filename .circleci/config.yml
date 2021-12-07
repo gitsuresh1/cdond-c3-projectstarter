@@ -149,12 +149,10 @@ jobs:
       - run:
           name: Add back-end ip to ansible inventory
           command: |
-            cat .circleci/ansible/inventory.txt
             aws ec2 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text \
               --region us-east-1 >> .circleci/ansible/inventory.txt
-            cat .circleci/ansible/inventory.txt
       - persist_to_workspace:
           root: .
           paths:
@@ -174,7 +172,6 @@ jobs:
             apk add --update ansible
       - attach_workspace:
           at: ~/
-      - run: yum install -y tar gzip
       - run:
           name: Configure server
           command: |
