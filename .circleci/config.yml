@@ -161,7 +161,7 @@ jobs:
       - persist_to_workspace:
           root: ~/
           paths:
-            - iplist.txt
+            - project/iplist.txt
       - destroy-environment:
           id: ${CIRCLE_WORKFLOW_ID}
           when: on_fail
