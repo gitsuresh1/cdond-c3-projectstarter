@@ -150,7 +150,24 @@ jobs:
     steps:
       - checkout
       - run: yum install -y tar gzip
-
+      - run:
+          name: Ensure back-end infrastructure exists
+          command: |
+            aws cloudformation deploy \
+              --region us-east-1 \
+              --template-file .circleci/files/backend.yml \
+              --tags project=udapeople \
+              --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} \
+              --parameter-overrides ID=${CIRCLE_WORKFLOW_ID}
+      - run:
+          name: Ensure front-end infrastructure exist
+          command: |
+            aws cloudformation deploy \
+              --region us-east-1 \
+              --template-file .circleci/files/frontend.yml \
+              --tags project=udapeople1 \
+              --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7} \
+              --parameter-overrides ID=${CIRCLE_WORKFLOW_ID}
       - run:
           name: Add back-end ip to ansible inventory
           command: |
@@ -206,6 +223,7 @@ jobs:
       - run:
           name: Send migration results to memstash
           command: |
+            cat ${CIRCLE_WORKFLOW_ID}
             if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
             then
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID}
@@ -354,16 +372,18 @@ workflows:
     jobs:
       #- build-frontend
       #- build-backend:
-       #   requires: [ build-frontend ]
+      #   requires: [ build-frontend ]
       #- test-frontend:
-       #   requires: [build-frontend]
+      #   requires: [build-frontend]
       #- test-backend:
-       #   requires: [build-backend]
+      #   requires: [build-backend]
       #- scan-backend:
-       #   requires: [build-backend]
+      #   requires: [build-backend]
       #- scan-frontend:
-       #   requires: [build-frontend]
-      - deploy-infrastructure
-       #   requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-      - configure-infrastructure:
-          requires: [deploy-infrastructure]
+      #   requires: [build-frontend]
+      # deploy-infrastructure
+      #   requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+      # configure-infrastructure:
+       #   requires: [deploy-infrastructure]
+      - run-migrations:
+          #requires: [ configure-infrastructure ]
