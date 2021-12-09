@@ -242,16 +242,13 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            sudo apt-get update -y
-            sudo apt update
-            sudo apt install software-properties-common
-            sudo add-apt-repository --yes --update ppa:ansible/ansible
-            sudo apt install ansible
-            sudo apt install npm
-            npm -v or npm –version
-            sudo apt-get update
-            sudo apt-get install awscli
-            sudo aws --version
+            apk add --update ansible
+            apk add tar gzip
+            apk add curl
+            apk add gzip
+            apk add nodejs
+            apk add npm
+            pip install awscli
       - run:
           name: Get backend url
           command: |
