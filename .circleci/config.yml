@@ -152,17 +152,13 @@ jobs:
       - checkout
       - run: yum install -y tar gzip
       - run:
-          name: Ensure back-end infrastructure exists
-          command: |
-
-      - run:
           name: Ensure front-end infrastructure exist
           command: |
             aws cloudformation deploy \
               --region us-east-1 \
               --template-file .circleci/files/frontend.yml \
               --tags project=udapeople1 \
-              --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7} \
+              --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID} \
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID}
       - run:
           name: Add back-end ip to ansible inventory
@@ -265,7 +261,7 @@ jobs:
             npm audit fix --audit-level=critical --force
             npm audit --audit-level=critical            
             npm run build
-            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
+            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID} --recursive
       - destroy-environment:
           id: ${CIRCLE_WORKFLOW_ID}
