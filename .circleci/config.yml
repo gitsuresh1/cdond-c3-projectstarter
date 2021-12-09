@@ -151,15 +151,7 @@ jobs:
     steps:
       - checkout
       - run: yum install -y tar gzip
-      - run:
-          name: Ensure back-end infrastructure exists
-          command: |
-            aws cloudformation deploy \
-              --region us-east-1 \
-              --template-file .circleci/files/backend.yml \
-              --tags project=udapeople \
-              --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} \
-              --parameter-overrides ID=${CIRCLE_WORKFLOW_ID}
+
       - run:
           name: Ensure front-end infrastructure exist
           command: |
@@ -169,17 +161,7 @@ jobs:
               --tags project=udapeople1 \
               --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7} \
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID}
-      - run:
-          name: Add back-end ip to ansible inventory
-          command: |
-            aws ec2 describe-instances \
-              --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --output text \
-              --region us-east-1 >> .circleci/ansible/inventory.txt
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - project/.circleci/ansible/inventory.txt
+
       - destroy-environment:
           id: ${CIRCLE_WORKFLOW_ID}
           when: on_fail
@@ -444,15 +426,15 @@ workflows:
           requires: [build-backend]
       - scan-frontend:
           requires: [build-frontend]
-      #- deploy-infrastructure:
-       #   requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+      - deploy-infrastructure:
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
       #- configure-infrastructure:
        #   requires: [deploy-infrastructure]
-      - run-migrations:
-          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-      - deploy-frontend:
-          requires: [run-migrations]
-      - deploy-backend:
-          requires: [run-migrations]
-      - smoke-test:
-          requires: [deploy-backend, deploy-frontend]
+      #- run-migrations:
+       #   requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+      - deploy-frontend
+        #  requires: [run-migrations]
+      #- deploy-backend:
+       #   requires: [run-migrations]
+      #- smoke-test:
+       #   requires: [deploy-backend, deploy-frontend]
