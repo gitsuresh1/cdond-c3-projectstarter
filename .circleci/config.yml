@@ -244,9 +244,17 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            yum -y install tar gzip
-            curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
-            yum -y install nodejs
+            sudo apt-get update -y
+            sudo apt-get update -y
+            sudo apt update
+            sudo apt install software-properties-common
+            sudo add-apt-repository --yes --update ppa:ansible/ansible
+            sudo apt install ansible
+            sudo apt install npm
+            npm -v or npm –version
+            sudo apt-get update
+            sudo apt-get install awscli
+            sudo aws --version
       - run:
           name: Get backend url
           command: |
@@ -429,25 +437,25 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-frontend
-      - build-backend
-      - test-frontend:
-          requires: [build-frontend]
-      - test-backend:
-          requires: [build-backend]
-      - scan-backend:
-          requires: [build-backend]
-      - scan-frontend:
-          requires: [build-frontend]
+     # - build-frontend
+      #- build-backend
+      #- test-frontend:
+       #   requires: [build-frontend]
+      #- test-backend:
+#          requires: [build-backend]
+ #     - scan-backend:
+  #        requires: [build-backend]
+   #   - scan-frontend:
+    #      requires: [build-frontend]
       #- deploy-infrastructure:
        #   requires: [test-frontend, test-backend, scan-frontend, scan-backend]
       #- configure-infrastructure:
        #   requires: [deploy-infrastructure]
-      - run-migrations:
-          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-      - deploy-frontend:
-          requires: [run-migrations]
-      - deploy-backend:
-          requires: [run-migrations]
-      - smoke-test:
-          requires: [deploy-backend, deploy-frontend]
+      #- run-migrations:
+       #   requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+      - deploy-frontend
+      #    requires: [run-migrations]
+      #- deploy-backend:
+       #   requires: [run-migrations]
+      #- smoke-test:
+       #   requires: [deploy-backend, deploy-frontend]
