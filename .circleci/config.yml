@@ -239,12 +239,9 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
-      - attach_workspace:
-          at: ~/
       - run:
           name: Install dependencies
           command: |
-            sudo apt-get update -y
             sudo apt-get update -y
             sudo apt update
             sudo apt install software-properties-common
