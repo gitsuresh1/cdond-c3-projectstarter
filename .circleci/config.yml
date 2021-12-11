@@ -152,6 +152,22 @@ jobs:
       - checkout
       - run: yum install -y tar gzip
       - run:
+          name: Ensure back-end infrastructure exists
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/backend.yml \
+              --tags project=udapeople-backend \
+              --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"
+      - run:
+          name: Ensure front-end infrastructure exist
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/frontend.yml \
+              --tags project=udapeople-frontend \
+              --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"
+      - run:
           name: Add back-end ip to ansible inventory
           command: |
             aws ec2 describe-instances \
@@ -177,7 +193,6 @@ jobs:
           name: Install Ansible
           command: |
             apk add --update ansible
-
       - run:
           name: Configure server
           command: |
@@ -250,12 +265,12 @@ jobs:
           name: Deploy frontend objects
           command: |
             aws s3 cp ./frontend/dist s3://udapeople-11e62437-6425-41c6-812d-68e7c6552ccb --recursive
-      #- destroy-environment:
-       #   id: ${CIRCLE_WORKFLOW_ID}
-        #  when: on_fail
-      #- revert-migrations:
-         # id: ${CIRCLE_WORKFLOW_ID}
-         # when: on_fail
+      - destroy-environment:
+         id: ${CIRCLE_WORKFLOW_ID}
+         when: on_fail
+      - revert-migrations:
+          id: ${CIRCLE_WORKFLOW_ID}
+          when: on_fail
 
   deploy-backend:
     docker:
@@ -301,7 +316,7 @@ jobs:
             cd .circleci/ansible
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
-            #ansible-playbook -i inventory.txt deploy-backend.yml
+            ansible-playbook -i inventory.txt deploy-backend.yml
       - destroy-environment:
           id: ${CIRCLE_WORKFLOW_ID}
           when: on_fail
@@ -410,28 +425,31 @@ workflows:
   default:
     jobs:
       - build-frontend
-      #- build-backend
+      - build-backend
       - test-frontend:
           requires: [build-frontend]
-      #- test-backend:
-      #   requires: [build-backend]
-      #- scan-backend:
-      #   requires: [build-backend]
+      - test-backend:
+          requires: [build-backend]
+      - scan-backend:
+          requires: [build-backend]
       - scan-frontend:
           requires: [build-frontend]
       - deploy-infrastructure:
-         requires: [test-frontend, scan-frontend]
-      #- configure-infrastructure
-       #   requires: [deploy-infrastructure]
-      #- run-migrations:
-      #   requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          filters:
+            branches:
+              only: [main,master]
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]
+      - run-migrations:
+          requires: [configure-infrastructure]
       - deploy-frontend:
-         requires: [deploy-infrastructure]
-        #- deploy-backend:
-      # requires: [deploy-infrastructure]
-        #- smoke-test:
-      #  requires: [deploy-backend, deploy-frontend]
-        #- cloudfront-update:
-      #   requires: [smoke-test]
-        #- cleanup:
-      # requires: [cloudfront-update]
+          requires: [run-migrations]
+      - deploy-backend:
+          requires: [run-migrations]
+      - smoke-test:
+          requires: [deploy-backend, deploy-frontend]
+      - cloudfront-update:
+          requires: [smoke-test]
+      - cleanup:
+          requires: [cloudfront-update]
